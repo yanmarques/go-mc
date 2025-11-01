@@ -80,9 +80,14 @@ func (s *Server) AcceptConn(conn *net.Conn) {
 		if err != nil {
 			var loginErr LoginFailErr
 			if errors.As(err, &loginErr) {
+				msg, err := loginErr.reason.MarshalJSON()
+				if err != nil {
+					msg = []byte{}
+				}
+
 				_ = conn.WritePacket(pk.Marshal(
 					packetid.ClientboundLoginLoginDisconnect,
-					loginErr.reason,
+					pk.ByteArray(msg),
 				))
 			}
 			if s.Logger != nil {
